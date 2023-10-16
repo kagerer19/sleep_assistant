@@ -12,10 +12,10 @@ class TodoApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
         useMaterial3: true,
       ),
-      home: const ToDoList(title: 'Todo Manager'),
+      home: const ToDoList(title: 'Todo Manager!'),
     );
   }
 }
@@ -30,7 +30,7 @@ class ToDoList extends StatefulWidget {
 }
 
 class _TodoListState extends State<ToDoList> {
-  final List<Todo> _todos = <Todo> [];
+  final List<Todo> _todos = <Todo>[];
   final TextEditingController _textFieldController = TextEditingController();
 
   void _addTodoItem(String name) {
@@ -89,11 +89,14 @@ class _TodoListState extends State<ToDoList> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget> [],
-        ),
+      body: ListView(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        children: _todos.map((Todo todo) {
+          return TodoItem(
+            todo: todo,
+            onTodoChanged: _handleTodoChange,
+          );
+        }).toList(),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _displayDialog(),
@@ -102,10 +105,60 @@ class _TodoListState extends State<ToDoList> {
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+
+  void _handleTodoChange(Todo todo) {
+    setState(() {
+      todo.completed = !todo.completed;
+    });
+  }
 }
 
 class Todo {
   Todo({required this.name, required this.completed});
+
   String name;
   bool completed;
+}
+
+class TodoItem extends StatelessWidget {
+  TodoItem({required this.todo, required this.onTodoChanged})
+      : super(key: ObjectKey(todo));
+
+  final Todo todo;
+  final void Function(Todo todo) onTodoChanged;
+
+  TextStyle? _getTextStyle(bool checked) {
+    if (!checked) return null;
+
+    return const TextStyle(
+      color: Colors.black54,
+      decoration: TextDecoration.lineThrough,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      onTap: () {
+        onTodoChanged(todo);
+      },
+      leading: Checkbox(
+        checkColor: Colors.greenAccent,
+        activeColor: Colors.red,
+        value: todo.completed,
+        onChanged: (value) {
+          onTodoChanged(todo);
+        },
+      ),
+      title: Row(children: <Widget>[
+        Expanded(child: Text(todo.name, style: _getTextStyle(todo.completed))),
+        IconButton(
+          iconSize: 25,
+          icon: const Icon(Icons.delete, color: Colors.red),
+          alignment: Alignment.centerRight,
+          onPressed: () {},
+        ),
+      ]),
+    );
+  }
 }
