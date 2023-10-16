@@ -15,7 +15,7 @@ class TodoApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
         useMaterial3: true,
       ),
-      home: const ToDoList(title: 'Todo Manager!'),
+      home: const ToDoList(title: 'ADHD Task Manager'),
     );
   }
 }
@@ -38,6 +38,12 @@ class _TodoListState extends State<ToDoList> {
       _todos.add(Todo(name: name, completed: false));
     });
     _textFieldController.clear();
+  }
+
+  void _deleteTodo(Todo todo) {
+    setState(() {
+      _todos.removeWhere((element) => element.name == todo.name);
+    });
   }
 
   Future<void> _displayDialog() async {
@@ -86,8 +92,11 @@ class _TodoListState extends State<ToDoList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          title: Text(
+            widget.title,
+          ),
+        centerTitle: true
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -95,6 +104,7 @@ class _TodoListState extends State<ToDoList> {
           return TodoItem(
             todo: todo,
             onTodoChanged: _handleTodoChange,
+            removeTodo: _deleteTodo,
           );
         }).toList(),
       ),
@@ -121,11 +131,15 @@ class Todo {
 }
 
 class TodoItem extends StatelessWidget {
-  TodoItem({required this.todo, required this.onTodoChanged})
+  TodoItem(
+      {required this.todo,
+      required this.onTodoChanged,
+      required this.removeTodo})
       : super(key: ObjectKey(todo));
 
   final Todo todo;
   final void Function(Todo todo) onTodoChanged;
+  final void Function(Todo todo) removeTodo;
 
   TextStyle? _getTextStyle(bool checked) {
     if (!checked) return null;
@@ -156,7 +170,9 @@ class TodoItem extends StatelessWidget {
           iconSize: 25,
           icon: const Icon(Icons.delete, color: Colors.red),
           alignment: Alignment.centerRight,
-          onPressed: () {},
+          onPressed: () {
+            removeTodo(todo);
+          },
         ),
       ]),
     );
